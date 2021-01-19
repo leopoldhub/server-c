@@ -8,12 +8,15 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include "socket.h"
 
 
 int socket_serveur;
 int opt;
+int child;
 int creer_serveur(int port, int option){
     opt = option;
     socket_serveur = socket(AF_INET, SOCK_STREAM, 0);
@@ -64,7 +67,7 @@ int ecouter_serveur(){
         /* traitement d'erreur */
     }
     int pidPapa = getpid();
-    fork();
+    child = fork();
     if(getpid()==pidPapa){
         close(socket_client);
     }
@@ -98,3 +101,9 @@ char* substring(const char s[], int p, int l) {
    sub[c] = '\0';
    return sub;
 }
+
+void traitement_signal(int sig){
+    int status;
+    waitpid(child,&status,WNOHANG);
+    printf("Signal %d reçu\n", sig);
+  }

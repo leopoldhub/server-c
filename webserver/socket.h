@@ -6,4 +6,5 @@
 int ecouter_serveur();
 int creer_serveur(int port, int option); 
 char* substring(const char s[], int p, int l);
+void traitement_signal(int sig);
 #endif
