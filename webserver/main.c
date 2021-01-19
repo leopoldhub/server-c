@@ -1,12 +1,13 @@
 #include <stdio.h>
-#include<string.h>
+#include <string.h>
+#include "socket.h"
 
 int main(int argc, char** argv){
-  if(argc>1 && strcmp(argv[1],"-advice") == 0){
-    printf("Don't panic!\n");
-    return 42;
+  if(argc>1 && strcmp(argv[1],"-serv") == 0){
+    creer_serveur(8080);
+    return 0;
   }
-  printf("need an advice ?\n");
+  printf("nothing, type -serv\n");
   return 0;
 
 
