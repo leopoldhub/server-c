@@ -16,7 +16,6 @@
 
 int socket_serveur;
 int opt;
-int child;
 int creer_serveur(int port, int option){
     opt = option;
     socket_serveur = socket(AF_INET, SOCK_STREAM, 0);
@@ -96,9 +95,11 @@ int ecouter_serveur(){
     if(frk == -1){
         perror("fork");
         return -1;
-    }else if(frk > 0) return 0;
+    }else if(frk > 0){
+        return 0;
+    } 
 
-    printf("incoming connection from %s:%hd on PID %d\n", inet_ntoa(client.sin_addr), ntohs(client.sin_port), getpid());
+    printf("incoming connection from %s:%u on PID %u\n", inet_ntoa(client.sin_addr), (unsigned int)ntohs(client.sin_port), getpid());
 
     const char *message_bienvenue = "NNNNNXXKOxollllcc:;;;;,,;:cldxxxxdollllccc:cdOKNWWWWWNNNXK0Oxdoc:::;;;;::clodxOKXXNXXNXXXXXXKKKKKKK0\nNNNNXK0kdlc:::::::::;;,,,,;:loooddxxkkkkxdodxkOOOkkkxddoolc;,,'''.............';codk0KXXXXXXXXXXXXKK\nNNXXKOxoc::::::::c:::;;,,;;;:clloddddddollccc::;;,,,,,,'''..........................,:okKXXXXXXKKKKK\nNNXKOxlc::::cccccc:::;;;,,;ccllllccccc:;;,,,,''''......................................':ok0KXXKKKKK\nNXX0OkkOkollloollc::;,,,;:cllc:;;;::;,''''................................................':xKXXKKKK\nNXK0KXNNN0xdddddolc;;;:ccccc;;;;;,''.........................             ..................'ckKXKKK\nNXK00XNWNKxooddddollcccc:;,,,'''..................                         ...................;kKKKK\nXXKOkOKKKOoccloooolc::;,''....................                                .................c0KKK\nXXKOxkO0Oxc;:clllc:;,,'....................                                     ...............c0KKK\nNXKOkO0K0xc:cc:::,''....................     ....................                .............'xXKKK\nXX0OOKXXKkolc:;,''...................   ....................................      ...........'dKXKKK\nXK00KXNN0xoc:,'..................     ...........''''''''''''''''.............      ........;xKXXKKK\nXKKXNNNKxoc;'..............'...     ........''''''''''''',,'',,'''''''''''......     ......cOXXXXKKK\nXKXNWWNkl:,''...............     ...........'''''''''',,,,,',,,,,,,'''''''''.....     ....oKXXXXXKKK\nKXNWWW0l;,''.............      ............''''''''''''''''''''',,,'''''''''......     ..:0NXXXXXKKK\n0XNWWXx:''''......'...        .........''''''''''''''''''''''''''''''''''''''''''..    .;kXXXXXXKKKK\nOKNNN0l,'''......''..         ........'''''''''''''',,,,,,,,''''''''''''''''''''''..   ;OXXXXXXXXKKK\nOKXNN0c,'''.''.'''..         ......'''''''''',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'.. .dXXXXXXXXKKKK\nO0KXX0c,'''''''''.      .   .....''''''''''''''''',,,,,,,,,,,,,,,,,,,,,,,,,,,,,''',...;OXXXXXXXXKKKK\nkO0KXKl,'''''','.    .. ........',,,,,,,,''..............'''',,,,,,,,,,,,'''''........c0XXXXXXXXKK00\nkO0KXXO:'',,','.     ..........',,,,,,,,'.....................''',,,,,,'..............:kKKXXXXXXKK00\nkO0KXWNk;',;,'.  .  ..........'',,,,,,,'.........  ..............',,'''.....        ..'',;lOXXXXK000\nkOKXNWMXd;,;,.  ... ..........',,,,,,,'.......      .......  ........... ..... .......'....'lkKXK000\nkOKXNWMWKo:;'................''',,,''........          ..... ................  ......'.....'oOKKK000\nxxk0NWMMNOl;'................,,,,,,,,,,'.....          ...    ....',,,,.....     ....'.....c0XKKK000\nddx0NMMWNOo:;,'......  .....';;;;;;;;;,,........                ..',,,,,'..       ........,xKXKK00OO\nxkOKNWWNOl;;;;;;,'..........,;;;;;;;;;;,'........              ..',,,,,,,..       .......;xKXXKK0000\nxk0KXNN0l,,,,;::;;,'........,;;;;;;;;;;,,,'.....................',,,,,,,,,...........'lxOKXXKKKKKKKK\nxkO0KK0d:,,,,;::;;;;'.......,;;;;;;;;;;;;,,,'''''..........''''',,,,,,,,,,,'.....'''';dKXXKKKKKKKKKK\nkO0KK0ko:,'',;:::;;;,''.....,;;;;;;;;;;;;;;;,,,,,''''''',,,,,,'''',,,,,,,,,,''''''',,,dKKKKKKKKK0000\ndk0000koc;'',;::;,',;;;,...',;;;;;;;;;;:;;;;;;;;;,,,,,,,,,,,,''''',,,,,,;,,,,,,'',,,,;xKKKKKKK000000\nloxkO00Okd:,,;:;,'';::;;;,,;;;;;;;;:;;::::::::;;;;;;;;;,,,;,,'',;;,,,,;;;;;,,,,,',,,,:xKKKK00000000O\ncldOKNNWWNk:,,;,''',;::;;;;;;;;;;;:::::::::::::;;;;;;;;;;;,,'',,,.....'',,,,''''',,,,ckK0000000000OO\n:okKNWWMMMNOc,,,''''',;:::;;;;;;;;;;::::::::::::;;;;;;,,,,,,,''''....'',,,'..'''',,,,oO00000OOOOOOOO\n:oOXNWWWMMMWKd:,,,,;;;;;:::;;;;;;;;;;;;:::::::::;;;;,,,,,,,,,,'''''''''''''..''''',,:d0OOOOOOOOOOOkk\n:o0XNWWWMMMMWN0d:;;;::;;;:::;;;;;;;;;;;;;;::::::;;,,,,,,,''',''''''',''''''...'''',,ckOOOOOOOkkkkkkk\ncd0XNNNNNNNWWWWNKxl::::;,;:::;;;;;;;;;;;;;;::::;;;,,,,,,,'''''''''','''''''..''''',,lOOkkkkkkkkkkkkx\ncx0XXX0OOO0KKKXXNX0xl:::::cc::;;;;;;;;;;;;;;:;;;;;;;,,,,,,,,,,,,,,,,,,',,''''''''',;okkkxxxxkkkkxxxx\ncokOOkxdxkO00000KKKKkc',:cccc::;;;;;;;;;;;;;;;;;;;;;;,,,,,,,,,,,,,''''''''''.'''',,ckK0Oxdoddddddddd\n:cllllooxkOO000000000xc;:c:ccc::;;;;;;;;;;;;;;;;;;;;,,''''....................'',,;xNMWWKxlccccccccl\n::::ccloxkOO0000000000kocc::cc:::::;;;;;;;;;;;;;;;;;;,,,,,,,,,,,,,,,,''''''''''',,lKMMMMWKdlcccccccc\n;::::clodxkkOOOOOOOOOOOkolc::cc::::::;;;;;;;;;;;;;;,,,,,,,;;;;;;;;,,,'''''',,,'',c0WMMMMMXkooooooooo\n;:;;:cclodxkkkkOkOOOOOkkxdc:::ccc::::::::;;::;;;;,,,,,,,,;;;;;;;,,,,''''''',,,,,cOWMMMMMMNOdoooooooo\n:c::::clodxxkkkkOOOOOkkkkxl::::::::::::::;::;;;;;;;;;,,,,;;;;;;,,,,'''''''',,,,c0WMMMMMMMNOolllooool\noddlcloddxkkOOOOOOOOOOOkOkl::;:::::::::;;;::;;;;;;;;,,,;;;;,,,,,,,'''''''''',,lKWMMMMMMMMNx:;:ccllll\ndkkxxOKK0O0000000KKKKKKKKkoc:;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;,,,,,,,,,,'''',,,lKMMMMMMMMMMXd;,,,,,;;;\n:oodkKXX0O000OOOO00KKKKKKOoc::;;;;;;;;;;;;;;;;;;;;;;;;;;;,,,,,,,,,,,,,,,,,,,c0WMMMMMMMMMMXd;,'......\n..';okOxooddollldkO000000koc:;;;;;;;;;;;;,,;;;,,,,,,,,,;,,,,,,,,,,,,'',,,,':OWMMMMMMMMMMMXo,........\n ...:ll:;clc;.',:oxO0KKKKOdc:;;;;;;;;;;;;;;;;,,,,,,,,,,,,,,,,,,,,,''',,,',cOWMMMMMMMMMMMMKl'........\n ...',,''clc,...',cdk0XXXKxc:;;;;;;;;;;;;;;;;;,,,,,,,,'''''''''','''','',oKWMMMMMMMMMMMMMKl'........\n";
 
@@ -111,7 +112,8 @@ int ecouter_serveur(){
     }else{
         write(socket_client, message_bienvenue, strlen(message_bienvenue));
     }
-    
+    kill(frk,9);
+
     return 0;
 }
 
@@ -129,7 +131,12 @@ char* substring(const char s[], int p, int l) {
 
 void traitement_signal(int sig){
     int status;
-    waitpid(child,&status,WNOHANG);
+    while(waitpid(-1/*getpid()*/,&status,WNOHANG)>0){
+        if(WIFEXITED(status)){printf("terminé par signal %d\n", status);}
+        if(WIFSIGNALED(status)){printf("terminé par signal %d\n", status);}
+        if(WTERMSIG(status)){printf("terminé par signal %d\n", status);}
+        if(WEXITSTATUS(status)){printf("terminé par signal %d\n", status);}
+    }
     printf("Signal %d reçu\n", sig);
 }
 
