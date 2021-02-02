@@ -128,7 +128,14 @@ int ecouter_serveur(){
 
         printf("first : %s",buf);
 
-        if(strcmp(buf,"GET / HTTP/1.1\r\n")!=0){
+
+        if(strcmp(buf,"GET /inexistant HTTP/1.1\r\n")==0){
+            fprintf(sockIn,"HTTP/1.1 404 Not Found\r\n");
+            fprintf(sockIn,"Connection: close\r\n");
+            fprintf(sockIn,"Content-Length: 0\r\n");
+            fprintf(sockIn,"\r\n");
+        
+        }else if(strcmp(buf,"GET / HTTP/1.1\r\n")!=0 ){
             fprintf(sockIn,"HTTP/1.1 400 Bad Request\r\n");
             fprintf(sockIn,"Connection: close\r\n");
             fprintf(sockIn,"Content-Length: 17\r\n");
