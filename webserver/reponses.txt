@@ -1,0 +1,19 @@
+1.  Modifiez votre programme pour qu’il ne transmette plus rien au client et qu’il affiche sur sa sortie standard les données envoyées par le client ;
+    FILE* sockIn = fdopen(socket_client,"a+");
+        while(fgets(buf, bufsize, sockIn)!=NULL){
+        
+            //fprintf(sockIn,"🦄 : %s",buf);//le pb vient de sockIn, avec stderr en stream ça marche impec
+            printf("msg reçu : %s",buf);
+            
+        }
+
+        fclose(sockIn);
+2.  Lancez la commande curl http://localhost:8080/
+
+3.  Quel est le message envoyé par le client web ?
+    curl: (1) Received HTTP/0.9 when not allowed
+
+4.  À l’aide de la RFC, trouvez le nom donné aux trois constituant de la première ligne de la requête envoyée par le client.
+    1  verbe HTTP I-DUNNO(https://www.rfc-editor.org/rfc/rfc8771.pdf) ou IPAC (https://fr.wikipedia.org/wiki/IP_over_Avian_Carriers)
+    2 chemin d'acces
+    3 protocol version

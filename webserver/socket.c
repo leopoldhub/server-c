@@ -120,15 +120,36 @@ int ecouter_serveur(){
     }else{
         int bufsize = 100;
         char buf[bufsize];
+        int tailleTotal = 0;
         
         FILE* sockIn = fdopen(socket_client,"a+");
-        while(fgets(buf, bufsize, sockIn)!=NULL){
-        
-            fprintf(sockIn,"🦄 : %s",buf);//le pb vient de sockIn, avec stderr en stream ça marche impec
-            printf("msg reçu : %s",buf);
-            
-        }
 
+        fgets(buf, bufsize, sockIn);
+
+        printf("first : %s",buf);
+
+        if(strcmp(buf,"GET / HTTP/1.1\r\n")!=0){
+            fprintf(sockIn,"HTTP/1.1 400 Bad Request\r\n");
+            fprintf(sockIn,"Connection: close\r\n");
+            fprintf(sockIn,"Content-Length: 17\r\n");
+            fprintf(sockIn,"\r\n");
+            
+        }else{
+            while(fgets(buf, bufsize, sockIn)!=NULL){
+                if(strcmp(buf,"\r\n")!=0){
+                    tailleTotal+=strlen(buf);
+                    fprintf(sockIn,"🦄 : %s",buf);//le pb vient de sockIn, avec stderr en stream ça marche impec
+                    printf("msg reçu : %s",buf);
+                }else{
+                    fprintf(sockIn,"HTTP/1.1 200 ok\r\n");
+                    fprintf(sockIn,"Connection: close\r\n");
+                    fprintf(sockIn,"Content-Length: %d\r\n",tailleTotal);
+                    fprintf(sockIn,"\r\n");
+                    break;
+                }
+                
+            }
+        }
         fclose(sockIn);
     }
     kill(frk,9);
