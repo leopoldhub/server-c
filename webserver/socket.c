@@ -12,7 +12,11 @@
 #include <sys/wait.h>
 
 #include "socket.h"
+/*-----------LISTE PROBLEMES--------------
+   *On peut envoyer que 1 commande, après le serv s'éteinds
 
+
+*/
 
 int socket_serveur;
 int opt;
@@ -104,16 +108,30 @@ int ecouter_serveur(){
     const char *message_bienvenue = "NNNNNXXKOxollllcc:;;;;,,;:cldxxxxdollllccc:cdOKNWWWWWNNNXK0Oxdoc:::;;;;::clodxOKXXNXXNXXXXXXKKKKKKK0\nNNNNXK0kdlc:::::::::;;,,,,;:loooddxxkkkkxdodxkOOOkkkxddoolc;,,'''.............';codk0KXXXXXXXXXXXXKK\nNNXXKOxoc::::::::c:::;;,,;;;:clloddddddollccc::;;,,,,,,'''..........................,:okKXXXXXXKKKKK\nNNXKOxlc::::cccccc:::;;;,,;ccllllccccc:;;,,,,''''......................................':ok0KXXKKKKK\nNXX0OkkOkollloollc::;,,,;:cllc:;;;::;,''''................................................':xKXXKKKK\nNXK0KXNNN0xdddddolc;;;:ccccc;;;;;,''.........................             ..................'ckKXKKK\nNXK00XNWNKxooddddollcccc:;,,,'''..................                         ...................;kKKKK\nXXKOkOKKKOoccloooolc::;,''....................                                .................c0KKK\nXXKOxkO0Oxc;:clllc:;,,'....................                                     ...............c0KKK\nNXKOkO0K0xc:cc:::,''....................     ....................                .............'xXKKK\nXX0OOKXXKkolc:;,''...................   ....................................      ...........'dKXKKK\nXK00KXNN0xoc:,'..................     ...........''''''''''''''''.............      ........;xKXXKKK\nXKKXNNNKxoc;'..............'...     ........''''''''''''',,'',,'''''''''''......     ......cOXXXXKKK\nXKXNWWNkl:,''...............     ...........'''''''''',,,,,',,,,,,,'''''''''.....     ....oKXXXXXKKK\nKXNWWW0l;,''.............      ............''''''''''''''''''''',,,'''''''''......     ..:0NXXXXXKKK\n0XNWWXx:''''......'...        .........''''''''''''''''''''''''''''''''''''''''''..    .;kXXXXXXKKKK\nOKNNN0l,'''......''..         ........'''''''''''''',,,,,,,,''''''''''''''''''''''..   ;OXXXXXXXXKKK\nOKXNN0c,'''.''.'''..         ......'''''''''',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'.. .dXXXXXXXXKKKK\nO0KXX0c,'''''''''.      .   .....''''''''''''''''',,,,,,,,,,,,,,,,,,,,,,,,,,,,,''',...;OXXXXXXXXKKKK\nkO0KXKl,'''''','.    .. ........',,,,,,,,''..............'''',,,,,,,,,,,,'''''........c0XXXXXXXXKK00\nkO0KXXO:'',,','.     ..........',,,,,,,,'.....................''',,,,,,'..............:kKKXXXXXXKK00\nkO0KXWNk;',;,'.  .  ..........'',,,,,,,'.........  ..............',,'''.....        ..'',;lOXXXXK000\nkOKXNWMXd;,;,.  ... ..........',,,,,,,'.......      .......  ........... ..... .......'....'lkKXK000\nkOKXNWMWKo:;'................''',,,''........          ..... ................  ......'.....'oOKKK000\nxxk0NWMMNOl;'................,,,,,,,,,,'.....          ...    ....',,,,.....     ....'.....c0XKKK000\nddx0NMMWNOo:;,'......  .....';;;;;;;;;,,........                ..',,,,,'..       ........,xKXKK00OO\nxkOKNWWNOl;;;;;;,'..........,;;;;;;;;;;,'........              ..',,,,,,,..       .......;xKXXKK0000\nxk0KXNN0l,,,,;::;;,'........,;;;;;;;;;;,,,'.....................',,,,,,,,,...........'lxOKXXKKKKKKKK\nxkO0KK0d:,,,,;::;;;;'.......,;;;;;;;;;;;;,,,'''''..........''''',,,,,,,,,,,'.....'''';dKXXKKKKKKKKKK\nkO0KK0ko:,'',;:::;;;,''.....,;;;;;;;;;;;;;;;,,,,,''''''',,,,,,'''',,,,,,,,,,''''''',,,dKKKKKKKKK0000\ndk0000koc;'',;::;,',;;;,...',;;;;;;;;;;:;;;;;;;;;,,,,,,,,,,,,''''',,,,,,;,,,,,,'',,,,;xKKKKKKK000000\nloxkO00Okd:,,;:;,'';::;;;,,;;;;;;;;:;;::::::::;;;;;;;;;,,,;,,'',;;,,,,;;;;;,,,,,',,,,:xKKKK00000000O\ncldOKNNWWNk:,,;,''',;::;;;;;;;;;;;:::::::::::::;;;;;;;;;;;,,'',,,.....'',,,,''''',,,,ckK0000000000OO\n:okKNWWMMMNOc,,,''''',;:::;;;;;;;;;;::::::::::::;;;;;;,,,,,,,''''....'',,,'..'''',,,,oO00000OOOOOOOO\n:oOXNWWWMMMWKd:,,,,;;;;;:::;;;;;;;;;;;;:::::::::;;;;,,,,,,,,,,'''''''''''''..''''',,:d0OOOOOOOOOOOkk\n:o0XNWWWMMMMWN0d:;;;::;;;:::;;;;;;;;;;;;;;::::::;;,,,,,,,''',''''''',''''''...'''',,ckOOOOOOOkkkkkkk\ncd0XNNNNNNNWWWWNKxl::::;,;:::;;;;;;;;;;;;;;::::;;;,,,,,,,'''''''''','''''''..''''',,lOOkkkkkkkkkkkkx\ncx0XXX0OOO0KKKXXNX0xl:::::cc::;;;;;;;;;;;;;;:;;;;;;;,,,,,,,,,,,,,,,,,,',,''''''''',;okkkxxxxkkkkxxxx\ncokOOkxdxkO00000KKKKkc',:cccc::;;;;;;;;;;;;;;;;;;;;;;,,,,,,,,,,,,,''''''''''.'''',,ckK0Oxdoddddddddd\n:cllllooxkOO000000000xc;:c:ccc::;;;;;;;;;;;;;;;;;;;;,,''''....................'',,;xNMWWKxlccccccccl\n::::ccloxkOO0000000000kocc::cc:::::;;;;;;;;;;;;;;;;;;,,,,,,,,,,,,,,,,''''''''''',,lKMMMMWKdlcccccccc\n;::::clodxkkOOOOOOOOOOOkolc::cc::::::;;;;;;;;;;;;;;,,,,,,,;;;;;;;;,,,'''''',,,'',c0WMMMMMXkooooooooo\n;:;;:cclodxkkkkOkOOOOOkkxdc:::ccc::::::::;;::;;;;,,,,,,,,;;;;;;;,,,,''''''',,,,,cOWMMMMMMNOdoooooooo\n:c::::clodxxkkkkOOOOOkkkkxl::::::::::::::;::;;;;;;;;;,,,,;;;;;;,,,,'''''''',,,,c0WMMMMMMMNOolllooool\noddlcloddxkkOOOOOOOOOOOkOkl::;:::::::::;;;::;;;;;;;;,,,;;;;,,,,,,,'''''''''',,lKWMMMMMMMMNx:;:ccllll\ndkkxxOKK0O0000000KKKKKKKKkoc:;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;,,,,,,,,,,'''',,,lKMMMMMMMMMMXd;,,,,,;;;\n:oodkKXX0O000OOOO00KKKKKKOoc::;;;;;;;;;;;;;;;;;;;;;;;;;;;,,,,,,,,,,,,,,,,,,,c0WMMMMMMMMMMXd;,'......\n..';okOxooddollldkO000000koc:;;;;;;;;;;;;,,;;;,,,,,,,,,;,,,,,,,,,,,,'',,,,':OWMMMMMMMMMMMXo,........\n ...:ll:;clc;.',:oxO0KKKKOdc:;;;;;;;;;;;;;;;;,,,,,,,,,,,,,,,,,,,,,''',,,',cOWMMMMMMMMMMMMKl'........\n ...',,''clc,...',cdk0XXXKxc:;;;;;;;;;;;;;;;;;,,,,,,,,'''''''''','''','',oKWMMMMMMMMMMMMMKl'........\n";
 
     if (opt == 1){
+        printf("1");
         for (int i = 0; i < (int)((strlen(message_bienvenue)+9)/10); i++){
             int nmb = strlen(message_bienvenue) < (unsigned long)((i+1)*10) ? (int)(strlen(message_bienvenue)%10)+1 : 10;
             write(socket_client,substring(message_bienvenue,(i)*10,nmb),10);
             sleep(1);
         }
-    }else{
+    }else if(opt == 0){
+        printf("2");
         write(socket_client, message_bienvenue, strlen(message_bienvenue));
+    }else{
+        int bufsize = 100;
+        char buf[bufsize];
+        
+        FILE* sockIn = fdopen(socket_client,"a+");
+        while(fgets(buf, bufsize, sockIn)!=NULL){
+        
+            fprintf(sockIn,"🦄 : %s",buf);//le pb vient de sockIn, avec stderr en stream ça marche impec
+            printf("msg reçu : %s",buf);
+            
+        }
+
+        fclose(sockIn);
     }
     kill(frk,9);
-
     return 0;
 }
 
