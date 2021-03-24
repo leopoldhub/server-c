@@ -24,8 +24,10 @@
 
 int socket_serveur;
 int opt;
-int creer_serveur(int port, int option){
+char* argv;
+int creer_serveur(int port, int option, char* arg){
     opt = option;
+    argv = arg;
     socket_serveur = socket(AF_INET, SOCK_STREAM, 0);
     /*####DOMAINS####
         AF_UNIX  UNIX domain sockets
@@ -126,31 +128,47 @@ int ecouter_serveur(){
             int bufsize = 100;
             char buf[bufsize];
             
-            FILE* sockIn = fdopen(socket_client,"a+");
+            FILE* sockIn = fdopen(socket_client,"w+");
 
             fgets_or_exit(buf, bufsize, sockIn);
 
             printf("first : %s",buf);
             http_request request;
 
-
+            FILE * file;
 
             if(parse_http_request(buf, &request) == -1){
-                if(request.method == HTTP_UNSUPPORTED)
-                    send_response(sockIn, 405, "Method Not Allowed", "Method Not Allowed\r\n");
-                else
-                    send_response(sockIn, 400, "Bad Request", "Bad request\r\n");
+                if(request.method == HTTP_UNSUPPORTED){
+                    char* msg = "Method Not Allowed\r\n";
+                    send_response(sockIn, 405, "Method Not Allowed", strlen(msg), msg);
+                }else{
+                    char* msg = "Bad request\r\n";
+                    send_response(sockIn, 400, "Bad Request", strlen(msg), msg);
+                }
             fclose(sockIn);
             return -1;
 
             
             }else if(strcmp(request.target, "/") == 0) {
-                send_response(sockIn, 200, "OK", "voici une licorne : 🦄");
-            }else{
+                char* msg = "voici une licorne : 🦄";
+                send_response(sockIn, 200, "OK",strlen(msg), msg);
+            }else if(check_and_open(rewrite_target(request.target), argv) != NULL){
 
-                    send_response(sockIn, 404, "Not Found", "Not Found\r\n");
-                    fclose(sockIn);
-                    return -1;
+            }else if((file = check_and_open(rewrite_target(request.target), argv)) == NULL){
+                char* msg = "Not Found\r\n";
+                send_response(sockIn, 404, "Not Found",strlen(msg), msg);
+                fclose(sockIn);
+                return -1;
+            }else{
+                /*200*/
+                skip_headers(sockIn);// hmmm suspicious
+                int desc_file = fileno(file);
+                send_response(sockIn, 200, "OK", get_file_size(desc_file), "🦄");//voir ya un truc à géchan
+                copy(file, sockIn);
+                fclose(file);
+
+
+                    
                 }
                     skip_headers(sockIn);
 
@@ -161,6 +179,16 @@ int ecouter_serveur(){
     kill(frk,9);
     return 0;
 }
+
+int get_file_size(int sockIn){
+	struct stat file;
+	if(fstat(sockIn, &file) < 0) {
+		perror("mauvaise taille pour le stat");
+		return -1;
+	}
+	return file.st_size;
+}
+
 
 char* substring(const char s[], int p, int l) {
     int c = 0;
@@ -228,13 +256,12 @@ void send_status(FILE* sockIn,int code,const char* reason_phrase){
     fprintf(sockIn, "HTTP/1.1 %d %s\r\n", code, reason_phrase);
    
 }
-void send_response(FILE* client, int code, const char* reason_phrase, const char* message_body){
+void send_response(FILE* client, int code, const char* reason_phrase, int length, const char* message_body){
 	send_status(client, code, reason_phrase);
-	fprintf(client, "Content-Length: %d\r\n\r\n%s",(int)strlen(message_body) , message_body);
+	fprintf(client, "Content-Length: %d\r\n\r\n%s", length, message_body);
 }
 
-char *rewrite_target(char *target)
-{
+char *rewrite_target(char *target){
 	if(strlen(target) < 2) {
 		return "/index.html";
 	}
@@ -278,6 +305,14 @@ FILE*check_and_open(const char*target,const char*document_root){
 	}
 	return NULL;
 }
+int copy(FILE *in, FILE *out){
+	char c;
+	while(fread(&c, 1, 1, in) == 1) {
+		fwrite(&c, 1, 1, out);
+	}
+	return 0;
+}
+
 
 
 
