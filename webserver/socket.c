@@ -120,11 +120,10 @@ int ecouter_serveur(){
     }else{
         int bufsize = 100;
         char buf[bufsize];
-        int tailleTotal = 0;
         
         FILE* sockIn = fdopen(socket_client,"a+");
 
-        fgets(buf, bufsize, sockIn);
+        fgets_or_exit(buf, bufsize, sockIn);
 
         printf("first : %s",buf);
 
@@ -136,27 +135,20 @@ int ecouter_serveur(){
             fprintf(sockIn,"\r\n");
         
         }else if(strcmp(buf,"GET / HTTP/1.1\r\n")!=0 ){
+            printf("et la ?");
+            send_status(sockIn,400,"Bad Request\r\n");
+            /*
             fprintf(sockIn,"HTTP/1.1 400 Bad Request\r\n");
             fprintf(sockIn,"Connection: close\r\n");
             fprintf(sockIn,"Content-Length: 17\r\n");
-            fprintf(sockIn,"\r\n");
+            fprintf(sockIn,"\r\n");*/
             
         }else{
-            while(fgets(buf, bufsize, sockIn)!=NULL){
-                if(strcmp(buf,"\r\n")!=0){
-                    tailleTotal+=strlen(buf);
-                    fprintf(sockIn,"🦄 : %s",buf);//le pb vient de sockIn, avec stderr en stream ça marche impec
-                    printf("msg reçu : %s",buf);
-                }else{
-                    fprintf(sockIn,"HTTP/1.1 200 ok\r\n");
-                    fprintf(sockIn,"Connection: close\r\n");
-                    fprintf(sockIn,"Content-Length: %d\r\n",tailleTotal);
-                    fprintf(sockIn,"\r\n");
-                    break;
-                }
-                
-            }
+            printf("et la ?");
+           skip_headers(buf,bufsize,sockIn);
+
         }
+        printf("fermeture");
         fclose(sockIn);
     }
     kill(frk,9);
@@ -185,6 +177,45 @@ void traitement_signal(int sig){
     }
     printf("Signal %d reçu\n", sig);
 }
+
+char* fgets_or_exit(char* buffer,int size,FILE* stream){
+    char* final;
+    if((final = fgets(buffer,size,stream)) == NULL){
+        exit(0);
+    }
+    return final;
+}
+
+void skip_headers(char* buffer,int size,FILE* stream){
+    int tailleTotal = 0;
+     while(fgets_or_exit(buffer, size, stream)!=NULL){
+                if(strcmp(buffer,"\r\n")!=0){
+                    tailleTotal+=strlen(buffer);
+                    fprintf(stream,"🦄 : %s",buffer);//le pb vient de sockIn, avec stderr en stream ça marche impec
+                    printf("msg reçu : %s",buffer);
+                }else{
+                    fprintf(stream,"HTTP/1.1 200 ok\r\n");
+                    fprintf(stream,"Connection: close\r\n");
+                    fprintf(stream,"Content-Length: %d\r\n",tailleTotal);
+                    fprintf(stream,"\r\n");
+                    break;
+                }
+                
+            }
+
+}
+void send_status(FILE* sockIn,int code,const char* reason_phrase){
+    printf("on est ici");
+    fprintf(sockIn, "HTTP/1.1 %d %s\r\n", code, reason_phrase);
+   
+}
+void send_response(FILE *sockIn, int code, const char *reason_phrase, int lenght, const char *message_body)
+{
+	send_status(sockIn, code, reason_phrase);
+	fprintf(sockIn, "Content-Length: %d\r\n\r\n%s", lenght, message_body);
+}
+
+
 
 /*####SOCKET INFOS####
 https://pubs.opengroup.org/onlinepubs/7908799/xns/syssocket.h.html
