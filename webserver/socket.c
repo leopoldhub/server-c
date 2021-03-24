@@ -135,22 +135,18 @@ int ecouter_serveur(){
 
 
 
-            if(parse_http_request(buf, &request) == 0){
-            send_response(sockIn, 400, "Bad Request", "Bad Request\r\n");
+            if(parse_http_request(buf, &request) == -1){
+                if(request.method == HTTP_UNSUPPORTED)
+                    send_response(sockIn, 405, "Method Not Allowed", "Method Not Allowed\r\n");
+                else
+                    send_response(sockIn, 400, "Bad Request", "Bad request\r\n");
             fclose(sockIn);
             return -1;
 
             
-            }else if(request.method == HTTP_UNSUPPORTED ){
-                send_response(sockIn, 405, "Method Not Allowed", "Method Not Allowed\r\n");
-                fclose(sockIn);
-                return -1;
-
-                
             }else if(strcmp(request.target, "/") == 0) {
-                skip_headers(sockIn);
                 send_response(sockIn, 200, "OK", "voici une licorne : 🦄");
-                }else{
+            }else{
 
                     send_response(sockIn, 404, "Not Found", "Not Found\r\n");
                     fclose(sockIn);
