@@ -10,7 +10,10 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 
+
+#include "stats.h"
 #include "socket.h"
 /*-----------LISTE PROBLEMES--------------
    *On peut envoyer que 1 commande, après le serv s'éteinds
@@ -213,6 +216,52 @@ void send_response(FILE *sockIn, int code, const char *reason_phrase, int lenght
 {
 	send_status(sockIn, code, reason_phrase);
 	fprintf(sockIn, "Content-Length: %d\r\n\r\n%s", lenght, message_body);
+}
+
+char *rewrite_target(char *target)
+{
+	if(strlen(target) < 2) {
+		return "/index.html";
+	}
+    int taille = sizeof(target)+1;
+	if(strchr(target, '?') != NULL) {
+        int i = 0;
+		char* chaineFinale = malloc(taille);
+		
+		while(target[i] != '?' && target[i] != '\0') {
+			chaineFinale[i] = target[i];
+			i++;
+		}
+		i++;
+		chaineFinale[i] = '\0';
+		return chaineFinale;
+	}
+	return target;
+}
+
+
+FILE*check_and_open(const char*target,const char*document_root){
+    char * link = malloc(sizeof(target)+sizeof(document_root)+128);
+	strcpy(link, document_root);
+	strcat(link, target);
+	printf("%s\n", link);
+	struct stat fichier;
+
+    if(stat(link, &fichier) == -1) {
+		perror("stat");
+		return NULL;
+	}
+	if(S_ISREG(fichier.st_mode)) {
+		FILE *fp;
+		fp = fopen(link, "r+");
+		free(link);
+		if(fp == NULL) {
+			perror("impossible d'ouvrir target");
+			return NULL;
+		}
+		return fp;
+	}
+	return NULL;
 }
 
 
