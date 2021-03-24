@@ -15,6 +15,7 @@
 
 #include "stats.h"
 #include "socket.h"
+#include "http_parse.h"
 /*-----------LISTE PROBLEMES--------------
    *On peut envoyer que 1 commande, après le serv s'éteinds
 
@@ -92,7 +93,7 @@ int ecouter_serveur(){
     struct sockaddr_in client;
     size_t size = sizeof(client);
     int socket_client = accept(socket_serveur, (struct sockaddr *)&client, (unsigned int *)&size);
-
+    //stats->served_connections++;
     if (socket_client == -1){
         perror("accept");
         return -1;
@@ -121,38 +122,45 @@ int ecouter_serveur(){
         printf("2");
         write(socket_client, message_bienvenue, strlen(message_bienvenue));
     }else{
-        int bufsize = 100;
-        char buf[bufsize];
-        
-        FILE* sockIn = fdopen(socket_client,"a+");
-
-        fgets_or_exit(buf, bufsize, sockIn);
-
-        printf("first : %s",buf);
-
-
-        if(strcmp(buf,"GET /inexistant HTTP/1.1\r\n")==0){
-            fprintf(sockIn,"HTTP/1.1 404 Not Found\r\n");
-            fprintf(sockIn,"Connection: close\r\n");
-            fprintf(sockIn,"Content-Length: 0\r\n");
-            fprintf(sockIn,"\r\n");
-        
-        }else if(strcmp(buf,"GET / HTTP/1.1\r\n")!=0 ){
-            printf("et la ?");
-            send_status(sockIn,400,"Bad Request\r\n");
-            /*
-            fprintf(sockIn,"HTTP/1.1 400 Bad Request\r\n");
-            fprintf(sockIn,"Connection: close\r\n");
-            fprintf(sockIn,"Content-Length: 17\r\n");
-            fprintf(sockIn,"\r\n");*/
+        while(1){
+            int bufsize = 100;
+            char buf[bufsize];
             
-        }else{
-            printf("et la ?");
-           skip_headers(buf,bufsize,sockIn);
+            FILE* sockIn = fdopen(socket_client,"a+");
 
+            fgets_or_exit(buf, bufsize, sockIn);
+
+            printf("first : %s",buf);
+            http_request request;
+
+
+
+            if(parse_http_request(buf, &request) == 0){
+            send_response(sockIn, 400, "Bad Request", "Bad Request\r\n");
+            fclose(sockIn);
+            return -1;
+
+            
+            }else if(request.method == HTTP_UNSUPPORTED ){
+                send_response(sockIn, 405, "Method Not Allowed", "Method Not Allowed\r\n");
+                fclose(sockIn);
+                return -1;
+
+                
+            }else if(strcmp(request.target, "/") == 0) {
+                skip_headers(sockIn);
+                send_response(sockIn, 200, "OK", "voici une licorne : 🦄");
+                }else{
+
+                    send_response(sockIn, 404, "Not Found", "Not Found\r\n");
+                    fclose(sockIn);
+                    return -1;
+                }
+                    skip_headers(sockIn);
+
+            printf("fermeture");
+            fclose(sockIn);
         }
-        printf("fermeture");
-        fclose(sockIn);
     }
     kill(frk,9);
     return 0;
@@ -189,6 +197,18 @@ char* fgets_or_exit(char* buffer,int size,FILE* stream){
     return final;
 }
 
+void skip_headers(FILE*client){
+    char buffer[128] = "";
+	while(strcmp(buffer, "\r\n") != 0 && strcmp(buffer, "\n") != 0) { 
+		if(fgets(buffer, 128, client) == NULL) {
+			exit(0);
+		}
+		fgets(buffer, 128, client);
+		
+	}
+
+}
+/*
 void skip_headers(char* buffer,int size,FILE* stream){
     int tailleTotal = 0;
      while(fgets_or_exit(buffer, size, stream)!=NULL){
@@ -206,16 +226,15 @@ void skip_headers(char* buffer,int size,FILE* stream){
                 
             }
 
-}
+}*/
 void send_status(FILE* sockIn,int code,const char* reason_phrase){
     printf("on est ici");
     fprintf(sockIn, "HTTP/1.1 %d %s\r\n", code, reason_phrase);
    
 }
-void send_response(FILE *sockIn, int code, const char *reason_phrase, int lenght, const char *message_body)
-{
-	send_status(sockIn, code, reason_phrase);
-	fprintf(sockIn, "Content-Length: %d\r\n\r\n%s", lenght, message_body);
+void send_response(FILE* client, int code, const char* reason_phrase, const char* message_body){
+	send_status(client, code, reason_phrase);
+	fprintf(client, "Content-Length: %d\r\n\r\n%s",(int)strlen(message_body) , message_body);
 }
 
 char *rewrite_target(char *target)

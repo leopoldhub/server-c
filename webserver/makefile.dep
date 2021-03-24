@@ -1,3 +1,4 @@
-socket.o: socket.c stats.h socket.h
+socket.o: socket.c stats.h socket.h http_parse.h
+http_parse.o: http_parse.c http_parse.h
 main.o: main.c socket.h
 stats.o: stats.c stats.h
